@@ -1,0 +1,22 @@
+[Unit]
+Requires=kube-server.service docker.service
+After=kube-server.service docker.service
+
+[Service]
+EnvironmentFile=/run/kube_node_ip.env
+ExecStartPre=/bin/chmod 0600 /var/lib/kubelet/kubeconfig
+ExecStartPre=/bin/mkdir -p /etc/cni/net.d
+ExecStart=/opt/kubernetes/server/bin/kubelet \
+  --allow-privileged=true \
+  --cluster-dns=${cluster_dns_ip} \
+  --cluster-domain=cluster.local \
+  --cni-bin-dir=/opt/cni/bin \
+  --cni-conf-dir=/etc/cni/net.d \
+  --kubeconfig=/var/lib/kubelet/kubeconfig \
+  --network-plugin=cni \
+  --node-ip=$${KUBE_NODE_IP} \
+  --pod-manifest-path=/etc/kubernetes/manifests \
+  --register-node=true
+
+[Install]
+WantedBy=multi-user.target

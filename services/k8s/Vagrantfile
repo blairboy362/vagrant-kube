@@ -1,0 +1,115 @@
+# -*- mode: ruby -*-
+# # vi: set ft=ruby :
+
+require 'fileutils'
+
+Vagrant.require_version ">= 1.6.0"
+
+# Make sure the vagrant-ignition plugin is installed
+required_plugins = %w(vagrant-ignition)
+
+plugins_to_install = required_plugins.select { |plugin| not Vagrant.has_plugin? plugin }
+if not plugins_to_install.empty?
+  puts "Installing plugins: #{plugins_to_install.join(' ')}"
+  if system "vagrant plugin install #{plugins_to_install.join(' ')}"
+    exec "vagrant #{ARGV.join(' ')}"
+  else
+    abort "Installation of one or more plugins has failed. Aborting."
+  end
+end
+
+Vagrant.configure("2") do |config|
+    config.vm.provider "virtualbox"
+    
+    config.ssh.insert_key = false
+    config.ssh.forward_agent = true
+  
+    config.vm.box = "coreos-alpha"
+    config.vm.box_url = "https://alpha.release.core-os.net/amd64-usr/current/coreos_production_vagrant_virtualbox.json"
+
+    config.vm.provider :virtualbox do |v|
+        # On VirtualBox, we don't have guest additions or a functional vboxsf
+        # in CoreOS, so tell Vagrant that so it can be smarter.
+        v.check_guest_additions = false
+        v.functional_vboxsf     = false
+        # enable ignition (this is always done on virtualbox as this is how the ssh key is added to the system)
+        config.ignition.enabled = true
+      end
+    
+    # plugin conflict
+    if Vagrant.has_plugin?("vagrant-vbguest") then
+        config.vbguest.auto_update = false
+    end
+
+    config.ignition.drive_root = "config_drives"
+
+    config.vm.define "etcd1" do |etcd|
+        etcd.vm.hostname = "etcd1"
+        etcd.vm.network :private_network, ip: "10.100.50.100", netmask: "255.255.0.0"
+        etcd.ignition.ip = "10.100.50.100"
+
+        etcd.vm.provider :virtualbox do |vb|
+            etcd.ignition.config_obj = vb
+        end
+        etcd.ignition.hostname = "etcd1"
+        etcd.ignition.path = "etcd1.ign"
+        etcd.ignition.drive_name = "config1"
+    end
+
+    config.vm.define "etcd2" do |etcd|
+        etcd.vm.hostname = "etcd2"
+        etcd.vm.network :private_network, ip: "10.100.50.101", netmask: "255.255.0.0"
+        etcd.ignition.ip = "10.100.50.101"
+
+        etcd.vm.provider :virtualbox do |vb|
+            etcd.ignition.config_obj = vb
+        end
+        etcd.ignition.hostname = "etcd2"
+        etcd.ignition.path = "etcd2.ign"
+        etcd.ignition.drive_name = "config2"
+    end
+
+    config.vm.define "etcd3" do |etcd|
+        etcd.vm.hostname = "etcd3"
+        etcd.vm.network :private_network, ip: "10.100.50.102", netmask: "255.255.0.0"
+        etcd.ignition.ip = "10.100.50.102"
+
+        etcd.vm.provider :virtualbox do |vb|
+            etcd.ignition.config_obj = vb
+        end
+        etcd.ignition.hostname = "etcd3"
+        etcd.ignition.path = "etcd3.ign"
+        etcd.ignition.drive_name = "config3"
+    end
+
+    config.vm.define "master" do |master|
+        master.vm.hostname = "master"
+        master.vm.network :private_network, ip: "10.100.100.100", netmask: "255.255.0.0"
+        master.ignition.ip = "10.100.100.100"
+
+        master.vm.provider :virtualbox do |vb|
+            master.ignition.config_obj = vb
+        end
+        master.ignition.hostname = "master"
+        master.ignition.path = "master.ign"
+        master.ignition.drive_name = "config4"
+    end
+
+    $num_workers = 2
+    (1..$num_workers).each do |worker_number|
+        vm_name = "%s%d" % ["worker", worker_number]
+        ip_address = "10.100.150.%d" % [worker_number + 100]
+        config.vm.define vm_name do |worker|
+            worker.vm.hostname = vm_name
+            worker.vm.network :private_network, ip: ip_address, netmask: "255.255.0.0"
+            worker.ignition.ip = ip_address
+
+            worker.vm.provider :virtualbox do |vb|
+                worker.ignition.config_obj = vb
+            end
+            worker.ignition.hostname = vm_name
+            worker.ignition.path = "worker.ign"
+            worker.ignition.drive_name = "config_%s" % vm_name
+        end
+    end
+end

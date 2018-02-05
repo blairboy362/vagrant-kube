@@ -1,0 +1,20 @@
+cluster ip range: 10.100.0.0/16
+service ip range: 10.110.0.0/16
+pod ip range: 10.120.0.0/16
+master ip: 10.100.100.100
+cluster name: drb
+token:
+  8CUBtOiyuGoEB6ZosdoqZPX9VbQIRXgA
+  FOmB10wdEBdJvLtL8C72P8UKVEGuTsat
+
+
+[Service]
+Environment=DOCKER_OPTS="--bridge=cbr0 --iptables=false --ip-masq=false "
+ExecStartPre=/usr/bin/ip link add name cbr0 type bridge
+ExecStartPre=/usr/bin/ip link set dev cbr0 mtu 1460
+ExecStartPre=/usr/bin/ip addr add 10.100.100.0/24 dev cbr0
+ExecStartPre=/usr/bin/ip link set dev cbr0 up
+
+
+--cluster-cidr string
+The CIDR range of pods in the cluster. When configured, traffic sent to a Service cluster IP from outside this range will be masqueraded and traffic sent from pods to an external LoadBalancer IP will be directed to the respective cluster IP instead

@@ -1,0 +1,90 @@
+{
+  "kind": "Pod",
+  "apiVersion": "v1",
+  "metadata": {
+    "name": "kube-apiserver"
+  },
+  "spec": {
+    "hostNetwork": true,
+    "containers": [
+      {
+        "name": "kube-apiserver",
+        "image": "gcr.io/google-containers/hyperkube:v1.9.2",
+        "command": [
+          "/hyperkube",
+          "apiserver",
+          "--admission-control=NamespaceLifecycle,LimitRanger,ServiceAccount,PersistentVolumeLabel,DefaultStorageClass,DefaultTolerationSeconds,MutatingAdmissionWebhook,ValidatingAdmissionWebhook,ResourceQuota",
+          "--advertise-address=${master_ip}",
+          "--allow-privileged=true",
+          "--basic-auth-file=/srv/kubernetes/basic_auth.csv",
+          "--bind-address=127.0.0.1",
+          "--client-ca-file=/srv/kubernetes/ca.crt",
+          "--etcd-servers=${etcd_servers}",
+          "--insecure-bind-address=${master_ip}",
+          "--service-account-key-file=/srv/kubernetes/server.crt",
+          "--service-cluster-ip-range=${service_cluster_ip_range}",
+          "--token-auth-file=/srv/kubernetes/known_tokens.csv"
+        ],
+        "ports": [
+          {
+            "name": "https",
+            "hostPort": 443,
+            "containerPort": 443
+          },
+          {
+            "name": "local",
+            "hostPort": 8080,
+            "containerPort": 8080
+          }
+        ],
+        "volumeMounts": [
+          {
+            "name": "srvkube",
+            "mountPath": "/srv/kubernetes",
+            "readOnly": true
+          },
+          {
+            "name": "etcssl",
+            "mountPath": "/etc/ssl",
+            "readOnly": true
+          },
+          {
+            "name": "varlog",
+            "mountPath": "/var/log",
+            "readOnly": false
+          }
+        ],
+        "livenessProbe": {
+          "httpGet": {
+            "scheme": "HTTP",
+            "host": "${master_ip}",
+            "port": 8080,
+            "path": "/healthz"
+          },
+          "initialDelaySeconds": 120,
+          "timeoutSeconds": 15
+        }
+      }
+    ],
+    "volumes": [
+      {
+        "name": "srvkube",
+        "hostPath": {
+          "path": "/srv/kubernetes"
+        }
+      },
+      {
+        "name": "etcssl",
+        "hostPath": {
+          "path": "/etc/ssl"
+        }
+      },
+      {
+        "name": "varlog",
+        "hostPath": {
+          "path": "/opt/master/log"
+        }
+      }
+    ]
+  }
+}

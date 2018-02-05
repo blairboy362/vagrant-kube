@@ -1,0 +1,2 @@
+${kubelet_token},kubelet,kubelet
+${kube_proxy_token},kube-proxy,kube-proxy
