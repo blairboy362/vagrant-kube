@@ -1,12 +1,8 @@
 [Service]
 Type=oneshot
-ExecStartPre=/usr/bin/sh -c 'chmod 0700 /opt/bootstrap/node_ip.sh && \
+RemainAfterExit=yes
+ExecStart=/usr/bin/sh -c 'chmod 0700 /opt/bootstrap/node_ip.sh && \
   /opt/bootstrap/node_ip.sh'
-ExecStartPre=/usr/bin/sh -c 'mkdir -p /tmp/cni && \
-  tar xzf /opt/bootstrap/cni-v0.3.0.tgz -C /tmp/cni &&\
-  cp /tmp/cni/loopback /opt/cni/bin/ && \
-  chmod 0755 /opt/cni/bin/calico /opt/cni/bin/calico-ipam /opt/cni/bin/loopback'
-ExecStart=/usr/bin/sh -c 'tar xzf /opt/kubernetes-server-linux-amd64.tar.gz -C /opt'
 
 [Install]
 WantedBy=multi-user.target

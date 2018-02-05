@@ -11,6 +11,7 @@ config: prepare
 	terraform output canal_yaml > client_config/canal.yaml
 	terraform output coredns_yaml > client_config/coredns.yaml
 	terraform output kube_dns_yaml > client_config/kube-dns.yaml
+	terraform output kube_proxy_yaml > client_config/kube-proxy.yaml
 
 clean: down
 	-rm config_drives/*ign config_drives/*merged *backup client_config/*

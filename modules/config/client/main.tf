@@ -16,6 +16,7 @@ data "template_file" "canal_yaml" {
 
   vars {
     pod_cidr = "${var.pod_cidr}"
+    master_ip = "${var.master_ip}"
   }
 }
 
@@ -48,4 +49,16 @@ data "template_file" "kube_dns_yaml" {
 
 output "kube_dns_yaml" {
   value = "${data.template_file.kube_dns_yaml.rendered}"
+}
+
+data "template_file" "kube_proxy_yaml" {
+  template = "${file("${path.module}/data/kube-proxy.yaml")}"
+
+  vars {
+    master_ip = "${var.master_ip}"
+  }
+}
+
+output "kube_proxy_yaml" {
+  value = "${data.template_file.kube_proxy_yaml.rendered}"
 }

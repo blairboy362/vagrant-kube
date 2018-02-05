@@ -90,7 +90,7 @@ data "ignition_file" "controller_manifest" {
 
 data "ignition_file" "server_crt" {
   filesystem = "root"
-  path       = "/srv/kubernetes/server.crt"
+  path       = "/etc/kubernetes/server.crt"
 
   content {
     content = "${file("${path.module}/data/server.crt")}"
@@ -99,7 +99,7 @@ data "ignition_file" "server_crt" {
 
 data "ignition_file" "server_key" {
   filesystem = "root"
-  path       = "/srv/kubernetes/server.key"
+  path       = "/etc/kubernetes/server.key"
 
   content {
     content = "${file("${path.module}/data/server.key")}"
@@ -108,7 +108,7 @@ data "ignition_file" "server_key" {
 
 data "ignition_file" "known_tokens" {
   filesystem = "root"
-  path       = "/srv/kubernetes/known_tokens.csv"
+  path       = "/etc/kubernetes/known_tokens.csv"
 
   content {
     content = "${data.template_file.known_tokens.rendered}"
@@ -117,7 +117,7 @@ data "ignition_file" "known_tokens" {
 
 data "ignition_file" "basic_auth" {
   filesystem = "root"
-  path       = "/srv/kubernetes/basic_auth.csv"
+  path       = "/etc/kubernetes/basic_auth.csv"
 
   content {
     content = "${data.template_file.basic_auth.rendered}"

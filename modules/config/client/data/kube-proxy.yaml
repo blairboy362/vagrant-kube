@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: kube-proxy
+  namespace: kube-system
+  labels:
+    k8s-app: kube-proxy
+spec:
+  selector:
+    matchLabels:
+      name: kube-proxy
+  template:
+    metadata:
+      labels:
+        name: kube-proxy
+    spec:
+      hostNetwork: true
+      containers:
+      - name: kube-proxy
+        image: gcr.io/google-containers/hyperkube:v1.9.2
+        imagePullPolicy: IfNotPresent
+        command:
+        - /hyperkube
+        - proxy
+        - --config=/etc/kubernetes/kube-proxy-config.yaml
+        - --master=http://${master_ip}:8080
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - name: varlog
+          mountPath: /var/log
+        - name: etcsslcerts
+          mountPath: /etc/ssl/certs
+        - name: etckubernetes
+          mountPath: /etc/kubernetes
+          readOnly: true
+      terminationGracePeriodSeconds: 0
+      volumes:
+      - name: varlog
+        hostPath:
+          path: /var/log
+      - name: etcsslcerts
+        hostPath:
+          path: /etc/ssl/certs
+      - name: etckubernetes
+        hostPath:
+          path: /etc/kubernetes

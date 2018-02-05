@@ -14,11 +14,6 @@
     {
     "name": "etcd-container",
     "image": "gcr.io/google_containers/etcd:3.2.14",
-    "resources": {
-      "requests": {
-        "cpu": 1
-      }
-    },
     "command": [
               "/bin/sh",
               "-c",
@@ -59,8 +54,8 @@
         "mountPath": "/var/etcd",
         "readOnly": false
       },
-      { "name": "varlogetcd",
-        "mountPath": "/var/log/etcd.log",
+      { "name": "varlog",
+        "mountPath": "/var/log",
         "readOnly": false
       },
       { "name": "etc",
@@ -75,10 +70,10 @@
     "hostPath": {
         "path": "/mnt/master-pd/var/etcd"}
   },
-  { "name": "varlogetcd",
+  { "name": "varlog",
     "hostPath": {
-        "path": "/var/log/etcd.log",
-        "type": "FileOrCreate"}
+        "path": "/var/log",
+        "type": "DirectoryOrCreate"}
   },
   { "name": "etc",
     "hostPath": {

@@ -105,3 +105,7 @@ output "coredns_yaml" {
 output "kube_dns_yaml" {
   value = "${module.client.kube_dns_yaml}"
 }
+
+output "kube_proxy_yaml" {
+  value = "${module.client.kube_proxy_yaml}"
+}

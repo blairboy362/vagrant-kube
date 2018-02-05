@@ -1,2 +1,9 @@
 .terraform/
 terraform.d/
+.vagrant/
+
+services/k8s/client_config/
+services/k8s/config_drives/
+
+*.tfstate
+*.backup

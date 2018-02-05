@@ -16,12 +16,12 @@
           "--allocate-node-cidrs=true",
           "--cluster-cidr=${pod_cidr}",
           "--master=${master_ip}:8080",
-          "--service-account-private-key-file=/srv/kubernetes/server.key"
+          "--service-account-private-key-file=/etc/kubernetes/server.key"
         ],
         "volumeMounts": [
           {
-            "name": "srvkube",
-            "mountPath": "/srv/kubernetes",
+            "name": "etckube",
+            "mountPath": "/etc/kubernetes",
             "readOnly": true
           },
           {
@@ -44,9 +44,9 @@
     ],
     "volumes": [
       {
-        "name": "srvkube",
+        "name": "etckube",
         "hostPath": {
-          "path": "/srv/kubernetes"
+          "path": "/etc/kubernetes"
         }
       },
       {
