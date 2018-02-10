@@ -1,0 +1,6 @@
+{
+    "type": "pki",
+    "config": {
+        "max_lease_ttl": "87600h"
+    }
+}

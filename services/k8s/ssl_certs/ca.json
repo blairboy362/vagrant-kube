@@ -1,0 +1,5 @@
+{
+    "common_name": "drb-kube",
+    "format": "pem",
+    "ttl": "87600h"
+}

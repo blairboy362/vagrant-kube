@@ -1,4 +1,4 @@
-.PHONY: clean config down prepare up
+.PHONY: clean config down prepare ssl-certs up
 
 config: prepare
 	terraform apply
@@ -15,8 +15,11 @@ config: prepare
 
 clean: down
 	-rm config_drives/*ign config_drives/*merged *backup client_config/*
+	-rm ../../modules/config/common/data/*.crt
+	-rm ../../modules/config/master/data/*.crt
+	-rm ../../modules/config/master/data/*.key
 
-up: config
+up: ssl-certs config
 	vagrant up
 
 down:
@@ -24,3 +27,11 @@ down:
 
 prepare:
 	mkdir -p config_drives client_config
+
+ssl-certs:
+	cd ssl_certs &&  ./generate_certs.sh
+	mv ssl_certs/ca.crt ../../modules/config/common/data/ca.crt
+	mv ssl_certs/token.crt ../../modules/config/master/data/token.crt
+	mv ssl_certs/token.key ../../modules/config/master/data/token.key
+	mv ssl_certs/apiserver.crt ../../modules/config/master/data/apiserver.crt
+	mv ssl_certs/apiserver.key ../../modules/config/master/data/apiserver.key

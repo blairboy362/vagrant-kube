@@ -88,21 +88,39 @@ data "ignition_file" "controller_manifest" {
   }
 }
 
-data "ignition_file" "server_crt" {
+data "ignition_file" "token_crt" {
   filesystem = "root"
-  path       = "/etc/kubernetes/server.crt"
+  path       = "/etc/kubernetes/token.crt"
 
   content {
-    content = "${file("${path.module}/data/server.crt")}"
+    content = "${file("${path.module}/data/token.crt")}"
   }
 }
 
-data "ignition_file" "server_key" {
+data "ignition_file" "token_key" {
   filesystem = "root"
-  path       = "/etc/kubernetes/server.key"
+  path       = "/etc/kubernetes/token.key"
 
   content {
-    content = "${file("${path.module}/data/server.key")}"
+    content = "${file("${path.module}/data/token.key")}"
+  }
+}
+
+data "ignition_file" "apiserver_crt" {
+  filesystem = "root"
+  path       = "/etc/kubernetes/apiserver.crt"
+
+  content {
+    content = "${file("${path.module}/data/apiserver.crt")}"
+  }
+}
+
+data "ignition_file" "apiserver_key" {
+  filesystem = "root"
+  path       = "/etc/kubernetes/apiserver.key"
+
+  content {
+    content = "${file("${path.module}/data/apiserver.key")}"
   }
 }
 
@@ -132,8 +150,10 @@ data "ignition_config" "master" {
                 "${data.ignition_file.apiserver_manifest.id}",
                 "${data.ignition_file.scheduler_manifest.id}",
                 "${data.ignition_file.controller_manifest.id}",
-                "${data.ignition_file.server_crt.id}",
-                "${data.ignition_file.server_key.id}",
+                "${data.ignition_file.token_crt.id}",
+                "${data.ignition_file.token_key.id}",
+                "${data.ignition_file.apiserver_crt.id}",
+                "${data.ignition_file.apiserver_key.id}",
                 "${data.ignition_file.known_tokens.id}",
                 "${data.ignition_file.basic_auth.id}",
             ),

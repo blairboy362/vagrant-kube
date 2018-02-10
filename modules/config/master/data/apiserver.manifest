@@ -22,8 +22,10 @@
           "--etcd-servers=${etcd_servers}",
           "--insecure-bind-address=0.0.0.0",
           "--secure-port=443",
-          "--service-account-key-file=/etc/kubernetes/server.crt",
+          "--service-account-key-file=/etc/kubernetes/token.crt",
           "--service-cluster-ip-range=${service_cluster_ip_range}",
+          "--tls-cert-file=/etc/kubernetes/apiserver.crt",
+          "--tls-private-key-file=/etc/kubernetes/apiserver.key",
           "--token-auth-file=/etc/kubernetes/known_tokens.csv"
         ],
         "ports": [
