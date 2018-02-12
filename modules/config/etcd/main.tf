@@ -6,6 +6,7 @@ module "common" {
   cluster_dns_ip   = "${var.cluster_dns_ip}"
   cluster_cidr     = "${var.cluster_cidr}"
   pod_cidr         = "${var.pod_cidr}"
+  cluster_domain   = "${var.cluster_domain}"
 }
 
 data "template_file" "etcd_manifest" {

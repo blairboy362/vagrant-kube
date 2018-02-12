@@ -33,3 +33,7 @@ variable "cluster_map" {
 variable "pod_cidr" {
   type = "string"
 }
+
+variable "cluster_domain" {
+  type = "string"
+}

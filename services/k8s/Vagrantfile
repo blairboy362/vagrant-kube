@@ -44,53 +44,57 @@ Vagrant.configure("2") do |config|
     config.ignition.drive_root = "config_drives"
 
     config.vm.define "etcd1" do |etcd|
-        etcd.vm.hostname = "etcd1"
-        etcd.vm.network :private_network, ip: "10.100.50.100", netmask: "255.255.0.0"
-        etcd.ignition.ip = "10.100.50.100"
+        ip_address = "10.100.50.100"
+        etcd.vm.hostname = ip_address
+        etcd.vm.network :private_network, ip: ip_address, netmask: "255.255.0.0"
+        etcd.ignition.ip = ip_address
 
         etcd.vm.provider :virtualbox do |vb|
             etcd.ignition.config_obj = vb
         end
-        etcd.ignition.hostname = "etcd1"
+        etcd.ignition.hostname = ip_address
         etcd.ignition.path = "etcd1.ign"
         etcd.ignition.drive_name = "config1"
     end
 
     config.vm.define "etcd2" do |etcd|
-        etcd.vm.hostname = "etcd2"
-        etcd.vm.network :private_network, ip: "10.100.50.101", netmask: "255.255.0.0"
-        etcd.ignition.ip = "10.100.50.101"
+        ip_address = "10.100.50.101"
+        etcd.vm.hostname = ip_address
+        etcd.vm.network :private_network, ip: ip_address, netmask: "255.255.0.0"
+        etcd.ignition.ip = ip_address
 
         etcd.vm.provider :virtualbox do |vb|
             etcd.ignition.config_obj = vb
         end
-        etcd.ignition.hostname = "etcd2"
+        etcd.ignition.hostname = ip_address
         etcd.ignition.path = "etcd2.ign"
         etcd.ignition.drive_name = "config2"
     end
 
     config.vm.define "etcd3" do |etcd|
-        etcd.vm.hostname = "etcd3"
-        etcd.vm.network :private_network, ip: "10.100.50.102", netmask: "255.255.0.0"
-        etcd.ignition.ip = "10.100.50.102"
+        ip_address = "10.100.50.102"
+        etcd.vm.hostname = ip_address
+        etcd.vm.network :private_network, ip: ip_address, netmask: "255.255.0.0"
+        etcd.ignition.ip = ip_address
 
         etcd.vm.provider :virtualbox do |vb|
             etcd.ignition.config_obj = vb
         end
-        etcd.ignition.hostname = "etcd3"
+        etcd.ignition.hostname = ip_address
         etcd.ignition.path = "etcd3.ign"
         etcd.ignition.drive_name = "config3"
     end
 
     config.vm.define "master" do |master|
-        master.vm.hostname = "master"
-        master.vm.network :private_network, ip: "10.100.100.100", netmask: "255.255.0.0"
-        master.ignition.ip = "10.100.100.100"
+        ip_address = "10.100.100.100"
+        master.vm.hostname = ip_address
+        master.vm.network :private_network, ip: ip_address, netmask: "255.255.0.0"
+        master.ignition.ip = ip_address
 
         master.vm.provider :virtualbox do |vb|
             master.ignition.config_obj = vb
         end
-        master.ignition.hostname = "master"
+        master.ignition.hostname = ip_address
         master.ignition.path = "master.ign"
         master.ignition.drive_name = "config4"
     end
@@ -100,14 +104,14 @@ Vagrant.configure("2") do |config|
         vm_name = "%s%d" % ["worker", worker_number]
         ip_address = "10.100.150.%d" % [worker_number + 100]
         config.vm.define vm_name do |worker|
-            worker.vm.hostname = vm_name
+            worker.vm.hostname = ip_address
             worker.vm.network :private_network, ip: ip_address, netmask: "255.255.0.0"
             worker.ignition.ip = ip_address
 
             worker.vm.provider :virtualbox do |vb|
                 worker.ignition.config_obj = vb
             end
-            worker.ignition.hostname = vm_name
+            worker.ignition.hostname = ip_address
             worker.ignition.path = "worker.ign"
             worker.ignition.drive_name = "config_%s" % vm_name
         end

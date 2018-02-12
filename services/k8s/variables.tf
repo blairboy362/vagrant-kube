@@ -28,8 +28,6 @@ variable "etcd_cluster_map" {
 
   default = {
     etcd-node-1 = "10.100.50.100"
-    etcd-node-2 = "10.100.50.101"
-    etcd-node-3 = "10.100.50.102"
   }
 }
 
@@ -46,4 +44,9 @@ variable "pod_cidr" {
 variable "cluster_cidr" {
   type    = "string"
   default = "10.100.0.0/16"
+}
+
+variable "cluster_domain" {
+  type = "string"
+  default = "k8s.local"
 }

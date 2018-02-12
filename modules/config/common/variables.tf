@@ -21,3 +21,7 @@ variable "cluster_cidr" {
 variable "pod_cidr" {
   type = "string"
 }
+
+variable "cluster_domain" {
+  type = "string"
+}

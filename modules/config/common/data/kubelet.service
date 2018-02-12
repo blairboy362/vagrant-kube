@@ -31,10 +31,9 @@ ExecStart=/usr/bin/docker run --rm \
     kubelet \
       --allow-privileged=true \
       --cluster-dns=${cluster_dns_ip} \
-      --cluster-domain=cluster.local \
+      --cluster-domain=${cluster_domain} \
       --cni-bin-dir=/opt/cni/bin \
       --cni-conf-dir=/etc/cni/net.d \
-      --hostname-override=$${KUBE_NODE_IP} \
       --kubeconfig=/etc/kubernetes/kubelet-kubeconfig \
       --network-plugin=cni \
       --node-ip=$${KUBE_NODE_IP} \

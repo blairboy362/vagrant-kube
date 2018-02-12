@@ -21,6 +21,7 @@ data "template_file" "kubelet_service" {
 
   vars {
     cluster_dns_ip = "${var.cluster_dns_ip}"
+    cluster_domain = "${var.cluster_domain}"
   }
 }
 

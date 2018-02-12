@@ -1,6 +1,15 @@
-.PHONY: clean config down prepare ssl-certs up
+.PHONY: bootstrap clean config down prepare ssl-certs up
 
-config: prepare
+bootstrap: up
+	./bootstrap_cluster.sh
+
+up: config
+	vagrant up etcd1 master worker1
+
+down:
+	-vagrant destroy --force
+
+config: prepare ssl-certs
 	terraform apply
 	terraform output etcd1 > config_drives/etcd1.ign
 	terraform output etcd2 > config_drives/etcd2.ign
@@ -9,8 +18,7 @@ config: prepare
 	terraform output worker > config_drives/worker.ign
 	terraform output client_kubeconfig > client_config/kubeconfig
 	terraform output canal_yaml > client_config/canal.yaml
-	terraform output coredns_yaml > client_config/coredns.yaml
-	terraform output kube_dns_yaml > client_config/kube-dns.yaml
+	terraform output coredns_values_yaml > client_config/coredns_values.yaml
 	terraform output kube_proxy_yaml > client_config/kube-proxy.yaml
 
 clean: down
@@ -18,12 +26,6 @@ clean: down
 	-rm ../../modules/config/common/data/*.crt
 	-rm ../../modules/config/master/data/*.crt
 	-rm ../../modules/config/master/data/*.key
-
-up: ssl-certs config
-	vagrant up
-
-down:
-	-vagrant destroy --force
 
 prepare:
 	mkdir -p config_drives client_config

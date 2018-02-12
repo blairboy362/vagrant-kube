@@ -24,8 +24,8 @@ output "canal_yaml" {
   value = "${data.template_file.canal_yaml.rendered}"
 }
 
-data "template_file" "coredns_yaml" {
-  template = "${file("${path.module}/data/coredns.yaml")}"
+data "template_file" "coredns_values_yaml" {
+  template = "${file("${path.module}/data/coredns_values.yaml")}"
 
   vars {
     cluster_domain           = "${var.cluster_domain}"
@@ -34,21 +34,8 @@ data "template_file" "coredns_yaml" {
   }
 }
 
-output "coredns_yaml" {
-  value = "${data.template_file.coredns_yaml.rendered}"
-}
-
-data "template_file" "kube_dns_yaml" {
-  template = "${file("${path.module}/data/kube-dns.yaml")}"
-
-  vars {
-    cluster_dns_ip = "${var.cluster_dns_ip}"
-    cluster_domain = "${var.cluster_domain}"
-  }
-}
-
-output "kube_dns_yaml" {
-  value = "${data.template_file.kube_dns_yaml.rendered}"
+output "coredns_values_yaml" {
+  value = "${data.template_file.coredns_values_yaml.rendered}"
 }
 
 data "template_file" "kube_proxy_yaml" {

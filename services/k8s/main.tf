@@ -9,6 +9,7 @@ module "etcd1" {
   cluster_map      = "${var.etcd_cluster_map}"
   cluster_cidr     = "${var.cluster_cidr}"
   pod_cidr         = "${var.pod_cidr}"
+  cluster_domain = "${var.cluster_domain}"
 }
 
 output "etcd1" {
@@ -26,6 +27,7 @@ module "etcd2" {
   cluster_map      = "${var.etcd_cluster_map}"
   cluster_cidr     = "${var.cluster_cidr}"
   pod_cidr         = "${var.pod_cidr}"
+  cluster_domain = "${var.cluster_domain}"
 }
 
 output "etcd2" {
@@ -43,6 +45,7 @@ module "etcd3" {
   cluster_map      = "${var.etcd_cluster_map}"
   cluster_cidr     = "${var.cluster_cidr}"
   pod_cidr         = "${var.pod_cidr}"
+  cluster_domain = "${var.cluster_domain}"
 }
 
 output "etcd3" {
@@ -60,6 +63,7 @@ module "master" {
   service_cluster_ip_range = "${var.service_cluster_ip_range}"
   pod_cidr                 = "${var.pod_cidr}"
   cluster_cidr             = "${var.cluster_cidr}"
+  cluster_domain = "${var.cluster_domain}"
 }
 
 output "master" {
@@ -74,6 +78,7 @@ module "worker" {
   cluster_dns_ip   = "${var.cluster_dns_ip}"
   cluster_cidr     = "${var.cluster_cidr}"
   pod_cidr         = "${var.pod_cidr}"
+  cluster_domain = "${var.cluster_domain}"
 }
 
 output "worker" {
@@ -85,7 +90,7 @@ module "client" {
   admin_token              = "${var.admin_token}"
   master_ip                = "${var.master_ip}"
   pod_cidr                 = "${var.pod_cidr}"
-  cluster_domain           = "k8s.local"
+  cluster_domain           = "${var.cluster_domain}"
   service_cluster_ip_range = "${var.service_cluster_ip_range}"
   cluster_dns_ip           = "${var.cluster_dns_ip}"
 }
@@ -98,12 +103,8 @@ output "canal_yaml" {
   value = "${module.client.canal_yaml}"
 }
 
-output "coredns_yaml" {
-  value = "${module.client.coredns_yaml}"
-}
-
-output "kube_dns_yaml" {
-  value = "${module.client.kube_dns_yaml}"
+output "coredns_values_yaml" {
+  value = "${module.client.coredns_values_yaml}"
 }
 
 output "kube_proxy_yaml" {
