@@ -49,3 +49,15 @@ data "template_file" "kube_proxy_yaml" {
 output "kube_proxy_yaml" {
   value = "${data.template_file.kube_proxy_yaml.rendered}"
 }
+
+data "template_file" "kube_dashboard_values_yaml" {
+  template = "${file("${path.module}/data/kube-dashboard_values.yaml")}"
+
+  vars {
+    cluster_domain           = "${var.cluster_domain}"
+  }
+}
+
+output "kube_dashboard_values_yaml" {
+  value = "${data.template_file.kube_dashboard_values_yaml.rendered}"
+}

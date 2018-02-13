@@ -22,6 +22,12 @@ helm init
 echo "Helm / tiller initialised. Sleeping for 60 seconds to allow tiller to come up completely"
 sleep 60
 
-helm install --name coredns -f client_config/coredns_values.yaml stable/coredns
+helm install -f client_config/coredns_values.yaml stable/coredns
+helm install -f client_config/nginx-ingress_values.yaml stable/nginx-ingress
+
+echo "Sleeping for 10 seconds to let the nginx ingress controller settle..."
+sleep 10
+
+helm install -f client_config/kube-dashboard_values.yaml stable/kubernetes-dashboard
 
 echo "Cluster bootstrap complete!"

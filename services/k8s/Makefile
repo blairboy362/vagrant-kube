@@ -20,6 +20,8 @@ config: prepare ssl-certs
 	terraform output canal_yaml > client_config/canal.yaml
 	terraform output coredns_values_yaml > client_config/coredns_values.yaml
 	terraform output kube_proxy_yaml > client_config/kube-proxy.yaml
+	terraform output kube_dashboard_values_yaml > client_config/kube-dashboard_values.yaml
+	cp ../../modules/config/client/data/nginx-ingress_values.yaml client_config/nginx-ingress_values.yaml
 
 clean: down
 	-rm config_drives/*ign config_drives/*merged *backup client_config/*
