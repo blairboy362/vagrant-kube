@@ -16,6 +16,7 @@
           "--admission-control=NamespaceLifecycle,LimitRanger,ServiceAccount,PersistentVolumeLabel,DefaultStorageClass,DefaultTolerationSeconds,MutatingAdmissionWebhook,ValidatingAdmissionWebhook,ResourceQuota",
           "--advertise-address=${master_ip}",
           "--allow-privileged=true",
+          "--authorization-mode=AlwaysAllow",
           "--basic-auth-file=/etc/kubernetes/basic_auth.csv",
           "--bind-address=0.0.0.0",
           "--client-ca-file=/etc/kubernetes/ca.crt",

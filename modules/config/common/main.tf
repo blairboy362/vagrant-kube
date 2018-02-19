@@ -7,15 +7,6 @@ data "template_file" "kubelet_kubeconfig" {
   }
 }
 
-data "template_file" "kube_proxy_kubeconfig" {
-  template = "${file("${path.module}/data/kube-proxy-kubeconfig")}"
-
-  vars {
-    TOKEN     = "${var.kube_proxy_token}"
-    master_ip = "${var.master_ip}"
-  }
-}
-
 data "template_file" "kubelet_service" {
   template = "${file("${path.module}/data/kubelet.service")}"
 
@@ -33,29 +24,12 @@ data "template_file" "node_ip_sh" {
   }
 }
 
-data "template_file" "kube_proxy_config" {
-  template = "${file("${path.module}/data/kube-proxy-config.yaml")}"
-
-  vars {
-    pod_cidr = "${var.pod_cidr}"
-  }
-}
-
 data "ignition_file" "kubelet_kubeconfig" {
   filesystem = "root"
   path       = "/etc/kubernetes/kubelet-kubeconfig"
 
   content {
     content = "${data.template_file.kubelet_kubeconfig.rendered}"
-  }
-}
-
-data "ignition_file" "kube_proxy_kubeconfig" {
-  filesystem = "root"
-  path       = "/etc/kubernetes/kube-proxy-kubeconfig"
-
-  content {
-    content = "${data.template_file.kube_proxy_kubeconfig.rendered}"
   }
 }
 
@@ -95,15 +69,6 @@ data "ignition_file" "node_ip_sh" {
   }
 }
 
-data "ignition_file" "kube_proxy_config" {
-  filesystem = "root"
-  path       = "/etc/kubernetes/kube-proxy-config.yaml"
-
-  content {
-    content = "${data.template_file.kube_proxy_config.rendered}"
-  }
-}
-
 data "ignition_systemd_unit" "kube_server_service" {
   name    = "kube-server.service"
   content = "${file("${path.module}/data/kube-server.service")}"
@@ -126,12 +91,10 @@ data "ignition_systemd_unit" "docker_service" {
 output "ignition_file_ids" {
   value = [
     "${data.ignition_file.kubelet_kubeconfig.id}",
-    "${data.ignition_file.kube_proxy_kubeconfig.id}",
     "${data.ignition_file.ca_crt.id}",
     "${data.ignition_file.kubelet_crt.id}",
     "${data.ignition_file.kubelet_key.id}",
     "${data.ignition_file.node_ip_sh.id}",
-    "${data.ignition_file.kube_proxy_config.id}",
   ]
 }
 

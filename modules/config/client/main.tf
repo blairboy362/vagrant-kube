@@ -43,6 +43,7 @@ data "template_file" "kube_proxy_yaml" {
 
   vars {
     master_ip = "${var.master_ip}"
+    pod_cidr = "${var.pod_cidr}"
   }
 }
 
