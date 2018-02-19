@@ -68,6 +68,24 @@ data "ignition_file" "ca_crt" {
   }
 }
 
+data "ignition_file" "kubelet_crt" {
+  filesystem = "root"
+  path       = "/etc/kubernetes/kubelet.crt"
+
+  content {
+    content = "${file("${path.module}/data/kubelet.crt")}"
+  }
+}
+
+data "ignition_file" "kubelet_key" {
+  filesystem = "root"
+  path       = "/etc/kubernetes/kubelet.key"
+
+  content {
+    content = "${file("${path.module}/data/kubelet.key")}"
+  }
+}
+
 data "ignition_file" "node_ip_sh" {
   filesystem = "root"
   path       = "/opt/bootstrap/node_ip.sh"
@@ -110,6 +128,8 @@ output "ignition_file_ids" {
     "${data.ignition_file.kubelet_kubeconfig.id}",
     "${data.ignition_file.kube_proxy_kubeconfig.id}",
     "${data.ignition_file.ca_crt.id}",
+    "${data.ignition_file.kubelet_crt.id}",
+    "${data.ignition_file.kubelet_key.id}",
     "${data.ignition_file.node_ip_sh.id}",
     "${data.ignition_file.kube_proxy_config.id}",
   ]

@@ -26,6 +26,7 @@ config: prepare ssl-certs
 clean: down
 	-rm config_drives/*ign config_drives/*merged *backup client_config/*
 	-rm ../../modules/config/common/data/*.crt
+	-rm ../../modules/config/common/data/*.key
 	-rm ../../modules/config/master/data/*.crt
 	-rm ../../modules/config/master/data/*.key
 
@@ -34,8 +35,12 @@ prepare:
 
 ssl-certs:
 	cd ssl_certs &&  ./generate_certs.sh
+	cp ssl_certs/ca.crt client_config/
 	mv ssl_certs/ca.crt ../../modules/config/common/data/ca.crt
 	mv ssl_certs/token.crt ../../modules/config/master/data/token.crt
 	mv ssl_certs/token.key ../../modules/config/master/data/token.key
 	mv ssl_certs/apiserver.crt ../../modules/config/master/data/apiserver.crt
 	mv ssl_certs/apiserver.key ../../modules/config/master/data/apiserver.key
+	mv ssl_certs/kubelet.crt ../../modules/config/common/data/kubelet.crt
+	mv ssl_certs/kubelet.key ../../modules/config/common/data/kubelet.key
+	mv ssl_certs/admin.crt ssl_certs/admin.key client_config/

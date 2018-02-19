@@ -67,5 +67,23 @@ api_server_crt_data=$(curl \
 echo ${api_server_crt_data} | jq -r '.data.certificate' > apiserver.crt
 echo ${api_server_crt_data} | jq -r '.data.private_key' > apiserver.key
 
+echo "Creating kubelet cert."
+token_crt_data=$(curl \
+    --header "X-Vault-Token: ${VAULT_TOKEN}" \
+    --request POST \
+    --data @kubelet.json \
+    "http://${VAULT_IP}:8200/v1/drb-kube-pki/issue/drb-kube")
+echo ${token_crt_data} | jq -r '.data.certificate' > kubelet.crt
+echo ${token_crt_data} | jq -r '.data.private_key' > kubelet.key
+
+echo "Creating admin cert."
+token_crt_data=$(curl \
+    --header "X-Vault-Token: ${VAULT_TOKEN}" \
+    --request POST \
+    --data @admin.json \
+    "http://${VAULT_IP}:8200/v1/drb-kube-pki/issue/drb-kube")
+echo ${token_crt_data} | jq -r '.data.certificate' > admin.crt
+echo ${token_crt_data} | jq -r '.data.private_key' > admin.key
+
 echo "Stopping vault."
 docker stop vault
