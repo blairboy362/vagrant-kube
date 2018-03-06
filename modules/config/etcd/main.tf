@@ -9,8 +9,8 @@ module "common" {
   cluster_domain   = "${var.cluster_domain}"
 }
 
-data "template_file" "etcd_manifest" {
-  template = "${file("${path.module}/data/etcd.manifest")}"
+data "template_file" "etcd_service" {
+  template = "${file("${path.module}/data/etcd.service")}"
 
   vars {
     node_name       = "${var.node_name}"
@@ -28,28 +28,20 @@ data "template_file" "etcd_manifest" {
   }
 }
 
-data "ignition_file" "etcd_manifest" {
-  filesystem = "root"
-  path       = "/etc/kubernetes/manifests/etcd.manifest"
-
-  content {
-    content = "${data.template_file.etcd_manifest.rendered}"
-  }
+data "ignition_systemd_unit" "etcd_service" {
+  name    = "etcd.service"
+  content = "${data.template_file.etcd_service.rendered}"
 }
 
 data "ignition_config" "etcd" {
-  files = [
-    "${concat(
-            "${module.common.ignition_file_ids}",
-            list(
-                "${data.ignition_file.etcd_manifest.id}",
-            ),
-        )}",
-  ]
+  files = ["${module.common.ignition_file_ids}"]
 
   systemd = [
     "${concat(
             "${module.common.ignition_systemd_unit_ids}",
+            list(
+              "${data.ignition_systemd_unit.etcd_service.id}",
+            ),
         )}",
   ]
 }

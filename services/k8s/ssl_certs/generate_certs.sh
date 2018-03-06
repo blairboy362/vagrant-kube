@@ -39,8 +39,9 @@ root_ca_data=$(curl \
     --header "X-Vault-Token: ${VAULT_TOKEN}" \
     --request POST \
     --data @ca.json \
-    "http://${VAULT_IP}:8200/v1/drb-kube-pki/root/generate/internal")
+    "http://${VAULT_IP}:8200/v1/drb-kube-pki/root/generate/exported")
 echo ${root_ca_data} | jq -r '.data.certificate' > ca.crt
+echo ${root_ca_data} | jq -r '.data.private_key' > ca.key
 
 echo "Creating role."
 curl \
@@ -48,6 +49,20 @@ curl \
     --request POST \
     --data @role.json \
     "http://${VAULT_IP}:8200/v1/drb-kube-pki/roles/drb-kube"
+
+echo "Creating admin role."
+curl \
+    --header "X-Vault-Token: ${VAULT_TOKEN}" \
+    --request POST \
+    --data @admin-role.json \
+    "http://${VAULT_IP}:8200/v1/drb-kube-pki/roles/drb-kube-admin"
+
+echo "Creating kubelet role."
+curl \
+    --header "X-Vault-Token: ${VAULT_TOKEN}" \
+    --request POST \
+    --data @kubelet-role.json \
+    "http://${VAULT_IP}:8200/v1/drb-kube-pki/roles/drb-kube-kubelet"
 
 echo "Creating token cert."
 token_crt_data=$(curl \
@@ -72,7 +87,7 @@ token_crt_data=$(curl \
     --header "X-Vault-Token: ${VAULT_TOKEN}" \
     --request POST \
     --data @kubelet.json \
-    "http://${VAULT_IP}:8200/v1/drb-kube-pki/issue/drb-kube")
+    "http://${VAULT_IP}:8200/v1/drb-kube-pki/issue/drb-kube-kubelet")
 echo ${token_crt_data} | jq -r '.data.certificate' > kubelet.crt
 echo ${token_crt_data} | jq -r '.data.private_key' > kubelet.key
 
@@ -81,7 +96,7 @@ token_crt_data=$(curl \
     --header "X-Vault-Token: ${VAULT_TOKEN}" \
     --request POST \
     --data @admin.json \
-    "http://${VAULT_IP}:8200/v1/drb-kube-pki/issue/drb-kube")
+    "http://${VAULT_IP}:8200/v1/drb-kube-pki/issue/drb-kube-admin")
 echo ${token_crt_data} | jq -r '.data.certificate' > admin.crt
 echo ${token_crt_data} | jq -r '.data.private_key' > admin.key
 

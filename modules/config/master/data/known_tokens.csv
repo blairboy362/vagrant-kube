@@ -1,2 +1,2 @@
-${kubelet_token},kubelet,kubelet
-${kube_proxy_token},kube-proxy,kube-proxy
+${kubelet_token},kubelet-bootstrap,10001,"system:bootstrappers"
+${kube_proxy_token},kube-proxy,10002

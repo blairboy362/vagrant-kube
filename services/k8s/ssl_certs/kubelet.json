@@ -1,4 +1,4 @@
 {
-    "common_name": "kubelet",
+    "common_name": "system:node:10.100.100.100",
     "format": "pem"
 }

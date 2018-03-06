@@ -18,3 +18,9 @@ ExecStartPre=/usr/bin/ip link set dev cbr0 up
 
 --cluster-cidr string
 The CIDR range of pods in the cluster. When configured, traffic sent to a Service cluster IP from outside this range will be masqueraded and traffic sent from pods to an external LoadBalancer IP will be directed to the respective cluster IP instead
+
+cluster-admin	system:masters group
+
+system:kube-scheduler	system:kube-scheduler user
+system:kube-controller-manager	system:kube-controller-manager user
+system:node-proxier	system:kube-proxy user

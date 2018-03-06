@@ -13,21 +13,21 @@ do
 done
 
 echo "API is up"
-
+kubectl --kubeconfig=${KUBECONFIG} apply -f client_config/bootstrap_roles.yaml
 kubectl --kubeconfig=${KUBECONFIG} apply -f client_config/kube-proxy.yaml
 kubectl --kubeconfig=${KUBECONFIG} apply -f client_config/canal.yaml
 
-helm init
+helm init --service-account tiller
 
 echo "Helm / tiller initialised. Sleeping for 60 seconds to allow tiller to come up completely"
 sleep 60
 
-helm install -f client_config/coredns_values.yaml stable/coredns
-helm install -f client_config/nginx-ingress_values.yaml stable/nginx-ingress
+helm install -f client_config/coredns_values.yaml stable/coredns --name coredns
+helm install -f client_config/nginx-ingress_values.yaml stable/nginx-ingress --name nginx-ingress
 
 echo "Sleeping for 10 seconds to let the nginx ingress controller settle..."
 sleep 10
 
-helm install -f client_config/kube-dashboard_values.yaml stable/kubernetes-dashboard
+helm install -f client_config/kube-dashboard_values.yaml stable/kubernetes-dashboard --name kubernetes-dashboard
 
 echo "Cluster bootstrap complete!"

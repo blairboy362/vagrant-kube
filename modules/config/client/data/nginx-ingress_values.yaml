@@ -254,8 +254,8 @@ defaultBackend:
 
 ## Enable RBAC as per https://github.com/kubernetes/ingress/tree/master/examples/rbac/nginx and https://github.com/kubernetes/ingress/issues/266
 rbac:
-  create: false
-  serviceAccountName: default
+  create: true
+  serviceAccountName: nginx-ingress
 
 ## If controller.stats.enabled = true, Prometheus metrics will be exported
 ## Ref: https://github.com/hnlq715/nginx-vts-exporter

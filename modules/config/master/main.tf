@@ -9,8 +9,26 @@ module "common" {
   cluster_domain   = "${var.cluster_domain}"
 }
 
-data "template_file" "apiserver_manifest" {
-  template = "${file("${path.module}/data/apiserver.manifest")}"
+data "template_file" "kubelet_kubeconfig" {
+  template = "${file("${path.module}/data/kubelet-kubeconfig")}"
+
+  vars {
+    token     = "${var.kubelet_token}"
+    master_ip = "${var.master_ip}"
+  }
+}
+
+data "template_file" "kubelet_service" {
+  template = "${file("${path.module}/data/kubelet.service")}"
+
+  vars {
+    cluster_dns_ip = "${var.cluster_dns_ip}"
+    cluster_domain = "${var.cluster_domain}"
+  }
+}
+
+data "template_file" "kube_apiserver_yaml" {
+  template = "${file("${path.module}/data/kube-apiserver.yaml")}"
 
   vars {
     service_cluster_ip_range = "${var.service_cluster_ip_range}"
@@ -28,8 +46,8 @@ data "template_file" "apiserver_manifest" {
   }
 }
 
-data "template_file" "controller_manifest" {
-  template = "${file("${path.module}/data/controller.manifest")}"
+data "template_file" "kube_controller_yaml" {
+  template = "${file("${path.module}/data/kube-controller.yaml")}"
 
   vars {
     pod_cidr  = "${var.pod_cidr}"
@@ -37,8 +55,8 @@ data "template_file" "controller_manifest" {
   }
 }
 
-data "template_file" "scheduler_manifest" {
-  template = "${file("${path.module}/data/scheduler.manifest")}"
+data "template_file" "kube_scheduler_yaml" {
+  template = "${file("${path.module}/data/kube-scheduler.yaml")}"
 
   vars {
     master_ip = "${var.master_ip}"
@@ -54,38 +72,12 @@ data "template_file" "known_tokens" {
   }
 }
 
-data "template_file" "basic_auth" {
-  template = "${file("${path.module}/data/basic_auth.csv")}"
-
-  vars {
-    admin_token = "${var.admin_token}"
-  }
-}
-
-data "ignition_file" "apiserver_manifest" {
+data "ignition_file" "ca_key" {
   filesystem = "root"
-  path       = "/etc/kubernetes/manifests/apiserver.manifest"
+  path       = "/etc/kubernetes/ca.key"
 
   content {
-    content = "${data.template_file.apiserver_manifest.rendered}"
-  }
-}
-
-data "ignition_file" "scheduler_manifest" {
-  filesystem = "root"
-  path       = "/etc/kubernetes/manifests/scheduler.manifest"
-
-  content {
-    content = "${data.template_file.scheduler_manifest.rendered}"
-  }
-}
-
-data "ignition_file" "controller_manifest" {
-  filesystem = "root"
-  path       = "/etc/kubernetes/manifests/controller.manifest"
-
-  content {
-    content = "${data.template_file.controller_manifest.rendered}"
+    content = "${file("${path.module}/data/ca.key")}"
   }
 }
 
@@ -125,6 +117,24 @@ data "ignition_file" "apiserver_key" {
   }
 }
 
+data "ignition_file" "kubelet_crt" {
+  filesystem = "root"
+  path       = "/etc/kubernetes/kubelet.crt"
+
+  content {
+    content = "${file("${path.module}/data/kubelet.crt")}"
+  }
+}
+
+data "ignition_file" "kubelet_key" {
+  filesystem = "root"
+  path       = "/etc/kubernetes/kubelet.key"
+
+  content {
+    content = "${file("${path.module}/data/kubelet.key")}"
+  }
+}
+
 data "ignition_file" "known_tokens" {
   filesystem = "root"
   path       = "/etc/kubernetes/known_tokens.csv"
@@ -134,13 +144,45 @@ data "ignition_file" "known_tokens" {
   }
 }
 
-data "ignition_file" "basic_auth" {
+data "ignition_file" "kubelet_kubeconfig" {
   filesystem = "root"
-  path       = "/etc/kubernetes/basic_auth.csv"
+  path       = "/etc/kubernetes/kubelet-kubeconfig"
 
   content {
-    content = "${data.template_file.basic_auth.rendered}"
+    content = "${data.template_file.kubelet_kubeconfig.rendered}"
   }
+}
+
+data "ignition_file" "kube_apiserver_yaml" {
+  filesystem = "root"
+  path       = "/etc/kubernetes/manifests/kube-apiserver.yaml"
+
+  content {
+    content = "${data.template_file.kube_apiserver_yaml.rendered}"
+  }
+}
+
+data "ignition_file" "kube_controller_yaml" {
+  filesystem = "root"
+  path       = "/etc/kubernetes/manifests/kube-controller.yaml"
+
+  content {
+    content = "${data.template_file.kube_controller_yaml.rendered}"
+  }
+}
+
+data "ignition_file" "kube_scheduler_yaml" {
+  filesystem = "root"
+  path       = "/etc/kubernetes/manifests/kube-scheduler.yaml"
+
+  content {
+    content = "${data.template_file.kube_scheduler_yaml.rendered}"
+  }
+}
+
+data "ignition_systemd_unit" "kubelet_service" {
+  name    = "kubelet.service"
+  content = "${data.template_file.kubelet_service.rendered}"
 }
 
 data "ignition_config" "master" {
@@ -148,15 +190,18 @@ data "ignition_config" "master" {
     "${concat(
             "${module.common.ignition_file_ids}",
             list(
-                "${data.ignition_file.apiserver_manifest.id}",
-                "${data.ignition_file.scheduler_manifest.id}",
-                "${data.ignition_file.controller_manifest.id}",
+                "${data.ignition_file.ca_key.id}",
                 "${data.ignition_file.token_crt.id}",
                 "${data.ignition_file.token_key.id}",
                 "${data.ignition_file.apiserver_crt.id}",
                 "${data.ignition_file.apiserver_key.id}",
+                "${data.ignition_file.kubelet_crt.id}",
+                "${data.ignition_file.kubelet_key.id}",
                 "${data.ignition_file.known_tokens.id}",
-                "${data.ignition_file.basic_auth.id}",
+                "${data.ignition_file.kubelet_kubeconfig.id}",
+                "${data.ignition_file.kube_apiserver_yaml.id}",
+                "${data.ignition_file.kube_controller_yaml.id}",
+                "${data.ignition_file.kube_scheduler_yaml.id}",
             ),
         )}",
   ]
@@ -164,6 +209,9 @@ data "ignition_config" "master" {
   systemd = [
     "${concat(
             "${module.common.ignition_systemd_unit_ids}",
+            list(
+              "${data.ignition_systemd_unit.kubelet_service.id}",
+            )
         )}",
   ]
 }
