@@ -2,8 +2,7 @@ data "template_file" "kubeconfig" {
   template = "${file("${path.module}/data/kubeconfig")}"
 
   vars {
-    admin_token = "${var.admin_token}"
-    master_ip   = "${var.master_ip}"
+    master_ip = "${var.master_ip}"
   }
 }
 
@@ -15,7 +14,7 @@ data "template_file" "canal_yaml" {
   template = "${file("${path.module}/data/canal.yaml")}"
 
   vars {
-    pod_cidr = "${var.pod_cidr}"
+    pod_cidr  = "${var.pod_cidr}"
     master_ip = "${var.master_ip}"
   }
 }
@@ -43,7 +42,7 @@ data "template_file" "kube_proxy_yaml" {
 
   vars {
     master_ip = "${var.master_ip}"
-    pod_cidr = "${var.pod_cidr}"
+    pod_cidr  = "${var.pod_cidr}"
   }
 }
 
@@ -55,7 +54,7 @@ data "template_file" "kube_dashboard_values_yaml" {
   template = "${file("${path.module}/data/kube-dashboard_values.yaml")}"
 
   vars {
-    cluster_domain           = "${var.cluster_domain}"
+    cluster_domain = "${var.cluster_domain}"
   }
 }
 

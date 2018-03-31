@@ -1,19 +1,12 @@
 module "common" {
-  source           = "../common"
-  kubelet_token    = "${var.kubelet_token}"
-  kube_proxy_token = "${var.kube_proxy_token}"
-  master_ip        = "${var.master_ip}"
-  cluster_dns_ip   = "${var.cluster_dns_ip}"
-  cluster_cidr     = "${var.cluster_cidr}"
-  pod_cidr         = "${var.pod_cidr}"
-  cluster_domain   = "${var.cluster_domain}"
+  source       = "../common"
+  cluster_cidr = "${var.cluster_cidr}"
 }
 
 data "template_file" "kubelet_kubeconfig" {
   template = "${file("${path.module}/data/kubelet-kubeconfig")}"
 
   vars {
-    token     = "${var.kubelet_token}"
     master_ip = "${var.master_ip}"
   }
 }

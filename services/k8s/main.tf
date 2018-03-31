@@ -1,15 +1,9 @@
 module "etcd1" {
-  source           = "../../modules/config/etcd"
-  kubelet_token    = "${var.kubelet_token}"
-  kube_proxy_token = "${var.kube_proxy_token}"
-  master_ip        = "${var.master_ip}"
-  cluster_dns_ip   = "${var.cluster_dns_ip}"
-  node_name        = "etcd-node-1"
-  node_ip          = "10.100.50.100"
-  cluster_map      = "${var.etcd_cluster_map}"
-  cluster_cidr     = "${var.cluster_cidr}"
-  pod_cidr         = "${var.pod_cidr}"
-  cluster_domain = "${var.cluster_domain}"
+  source       = "../../modules/config/etcd"
+  node_name    = "etcd-node-1"
+  node_ip      = "10.100.50.100"
+  cluster_cidr = "${var.cluster_cidr}"
+  cluster_map  = "${var.etcd_cluster_map}"
 }
 
 output "etcd1" {
@@ -17,17 +11,11 @@ output "etcd1" {
 }
 
 module "etcd2" {
-  source           = "../../modules/config/etcd"
-  kubelet_token    = "${var.kubelet_token}"
-  kube_proxy_token = "${var.kube_proxy_token}"
-  master_ip        = "${var.master_ip}"
-  cluster_dns_ip   = "${var.cluster_dns_ip}"
-  node_name        = "etcd-node-2"
-  node_ip          = "10.100.50.101"
-  cluster_map      = "${var.etcd_cluster_map}"
-  cluster_cidr     = "${var.cluster_cidr}"
-  pod_cidr         = "${var.pod_cidr}"
-  cluster_domain = "${var.cluster_domain}"
+  source       = "../../modules/config/etcd"
+  node_name    = "etcd-node-2"
+  node_ip      = "10.100.50.101"
+  cluster_cidr = "${var.cluster_cidr}"
+  cluster_map  = "${var.etcd_cluster_map}"
 }
 
 output "etcd2" {
@@ -35,17 +23,11 @@ output "etcd2" {
 }
 
 module "etcd3" {
-  source           = "../../modules/config/etcd"
-  kubelet_token    = "${var.kubelet_token}"
-  kube_proxy_token = "${var.kube_proxy_token}"
-  master_ip        = "${var.master_ip}"
-  cluster_dns_ip   = "${var.cluster_dns_ip}"
-  node_name        = "etcd-node-3"
-  node_ip          = "10.100.50.102"
-  cluster_map      = "${var.etcd_cluster_map}"
-  cluster_cidr     = "${var.cluster_cidr}"
-  pod_cidr         = "${var.pod_cidr}"
-  cluster_domain = "${var.cluster_domain}"
+  source       = "../../modules/config/etcd"
+  node_name    = "etcd-node-3"
+  node_ip      = "10.100.50.102"
+  cluster_cidr = "${var.cluster_cidr}"
+  cluster_map  = "${var.etcd_cluster_map}"
 }
 
 output "etcd3" {
@@ -56,14 +38,13 @@ module "master" {
   source                   = "../../modules/config/master"
   kubelet_token            = "${var.kubelet_token}"
   kube_proxy_token         = "${var.kube_proxy_token}"
-  admin_token              = "${var.admin_token}"
   master_ip                = "${var.master_ip}"
   cluster_dns_ip           = "${var.cluster_dns_ip}"
   etcd_servers             = "${values("${var.etcd_cluster_map}")}"
   service_cluster_ip_range = "${var.service_cluster_ip_range}"
   pod_cidr                 = "${var.pod_cidr}"
   cluster_cidr             = "${var.cluster_cidr}"
-  cluster_domain = "${var.cluster_domain}"
+  cluster_domain           = "${var.cluster_domain}"
 }
 
 output "master" {
@@ -71,13 +52,11 @@ output "master" {
 }
 
 module "worker" {
-  source           = "../../modules/config/worker"
-  kubelet_token    = "${var.kubelet_token}"
-  kube_proxy_token = "${var.kube_proxy_token}"
-  master_ip        = "${var.master_ip}"
-  cluster_dns_ip   = "${var.cluster_dns_ip}"
-  cluster_cidr     = "${var.cluster_cidr}"
-  pod_cidr         = "${var.pod_cidr}"
+  source         = "../../modules/config/worker"
+  kubelet_token  = "${var.kubelet_token}"
+  master_ip      = "${var.master_ip}"
+  cluster_dns_ip = "${var.cluster_dns_ip}"
+  cluster_cidr   = "${var.cluster_cidr}"
   cluster_domain = "${var.cluster_domain}"
 }
 
@@ -87,7 +66,6 @@ output "worker" {
 
 module "client" {
   source                   = "../../modules/config/client"
-  admin_token              = "${var.admin_token}"
   master_ip                = "${var.master_ip}"
   pod_cidr                 = "${var.pod_cidr}"
   cluster_domain           = "${var.cluster_domain}"

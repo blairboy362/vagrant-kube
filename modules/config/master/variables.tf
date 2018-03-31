@@ -6,10 +6,6 @@ variable "kube_proxy_token" {
   type = "string"
 }
 
-variable "admin_token" {
-  type = "string"
-}
-
 variable "master_ip" {
   type = "string"
 }

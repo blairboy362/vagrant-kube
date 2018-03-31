@@ -2,11 +2,6 @@
 
 VAULT_TOKEN="dbb4e807-fae2-4e6d-958f-f9b4ca27c36c"
 
-function call_vault () {
-    path=$1
-    curl --header "X-Vault-Token: ${VAULT_TOKEN}" "http://${VAULT_IP}:8200${path}"
-}
-
 docker run \
     --rm \
     --cap-add=IPC_LOCK \
