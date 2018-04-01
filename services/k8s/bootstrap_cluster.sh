@@ -12,15 +12,16 @@ do
     kube_api_up=$?
 done
 
-echo "API is up"
+echo "API is up. Waiting a few minutes for it to settle.."
+sleep 300
 kubectl --kubeconfig=${KUBECONFIG} apply -f client_config/bootstrap_roles.yaml
 kubectl --kubeconfig=${KUBECONFIG} apply -f client_config/kube-proxy.yaml
 kubectl --kubeconfig=${KUBECONFIG} apply -f client_config/canal.yaml
 
 helm init --service-account tiller
 
-echo "Helm / tiller initialised. Sleeping for 60 seconds to allow tiller to come up completely"
-sleep 60
+echo "Helm / tiller initialised. Sleeping for 5 minutes to allow tiller to come up completely"
+sleep 300
 
 helm install -f client_config/coredns_values.yaml stable/coredns --name coredns
 helm install -f client_config/nginx-ingress_values.yaml stable/nginx-ingress --name nginx-ingress
