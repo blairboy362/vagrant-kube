@@ -1,0 +1,19 @@
+[Unit]
+Requires=docker.service
+After=docker.service
+
+[Service]
+Restart=always
+RestartSec=30
+ExecStartPre=-/usr/bin/docker rm haproxy
+ExecStart=/usr/bin/docker run --rm \
+  --name haproxy \
+  --mount type=bind,source=/etc/haproxy,target=/usr/local/etc/haproxy \
+  -p 80:80 \
+  -p 443:443 \
+  -p 6443:6443 \
+  haproxy:1.8
+ExecStop=/usr/bin/docker stop haproxy
+
+[Install]
+WantedBy=multi-user.target

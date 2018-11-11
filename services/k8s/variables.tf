@@ -1,33 +1,13 @@
-variable "kubelet_token" {
-  type    = "string"
-  default = "8CUBtOiyuGoEB6ZosdoqZPX9VbQIRXgA"
-}
-
-variable "kube_proxy_token" {
-  type    = "string"
-  default = "FOmB10wdEBdJvLtL8C72P8UKVEGuTsat"
-}
-
-variable "admin_token" {
-  type    = "string"
-  default = "hKug05I6TteN16XIAwzcXSk5d1HZeNoJ"
-}
-
 variable "master_ip" {
   type    = "string"
   default = "10.100.100.100"
-}
-
-variable "cluster_dns_ip" {
-  type    = "string"
-  default = "10.110.50.10"
 }
 
 variable "etcd_cluster_map" {
   type = "map"
 
   default = {
-    etcd-node-1 = "10.100.50.100"
+    etcd1 = "10.100.50.100"
   }
 }
 
@@ -41,12 +21,12 @@ variable "pod_cidr" {
   default = "10.120.0.0/16"
 }
 
-variable "cluster_cidr" {
+variable "cluster_domain" {
   type    = "string"
-  default = "10.100.0.0/16"
+  default = "cluster.local"
 }
 
-variable "cluster_domain" {
+variable "k8s_tag" {
   type = "string"
-  default = "k8s.local"
+  default = "v1.11.4"
 }

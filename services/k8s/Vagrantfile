@@ -25,6 +25,7 @@ Vagrant.configure("2") do |config|
     config.ssh.forward_agent = true
   
     config.vm.box = "coreos-alpha"
+    config.vm.box_version = ">= 766.0.0"
     config.vm.box_url = "https://alpha.release.core-os.net/amd64-usr/current/coreos_production_vagrant_virtualbox.json"
 
     config.vm.provider :virtualbox do |v|
@@ -43,77 +44,107 @@ Vagrant.configure("2") do |config|
 
     config.ignition.drive_root = "config_drives"
 
-    config.vm.define "etcd1" do |etcd|
-        ip_address = "10.100.50.100"
-        etcd.vm.hostname = ip_address
-        etcd.vm.network :private_network, ip: ip_address, netmask: "255.255.0.0"
-        etcd.ignition.ip = ip_address
+    $etcd_count = 1
+    (1..$etcd_count).each do |i|
+        config.vm.define "etcd%d" % i do |etcd|
+            vm_name = "etcd%d" % i
+            ip_address = "10.100.50.%d" % (100 + i - 1)
+            etcd.vm.hostname = vm_name
+            etcd.vm.network :private_network, ip: ip_address, netmask: "255.255.0.0"
 
-        etcd.vm.provider :virtualbox do |vb|
-            etcd.ignition.config_obj = vb
+            etcd.vm.provider :virtualbox do |vb|
+                etcd.ignition.config_obj = vb
+                vb.memory = 1024
+            end
+            etcd.ignition.hostname = vm_name
+            etcd.ignition.ip = ip_address
+            etcd.ignition.path = "etcd.ign"
+            etcd.ignition.drive_name = vm_name
+
+            etcd.vm.provision :shell, :inline => "echo \"ETCD_NAME=#{vm_name}\" > /run/etcd_environment", :privileged => true
+            etcd.vm.provision :shell, :inline => "echo \"ETCD_ADVERTISE_CLIENT_URLS=https://#{ip_address}:2379\" >> /run/etcd_environment", :privileged => true
+            etcd.vm.provision :shell, :inline => "echo \"ETCD_INITIAL_ADVERTISE_PEER_URLS=https://#{ip_address}:2380\" >> /run/etcd_environment", :privileged => true
+            etcd.vm.provision :shell, :inline => "echo \"ETCD_LISTEN_PEER_URLS=https://#{ip_address}:2380\" >> /run/etcd_environment", :privileged => true
+            etcd.vm.provision :shell, :inline => "touch /run/etcd_environment.done", :privileged => true
         end
-        etcd.ignition.hostname = ip_address
-        etcd.ignition.path = "etcd1.ign"
-        etcd.ignition.drive_name = "config1"
     end
 
-    config.vm.define "etcd2" do |etcd|
-        ip_address = "10.100.50.101"
-        etcd.vm.hostname = ip_address
-        etcd.vm.network :private_network, ip: ip_address, netmask: "255.255.0.0"
-        etcd.ignition.ip = ip_address
-
-        etcd.vm.provider :virtualbox do |vb|
-            etcd.ignition.config_obj = vb
-        end
-        etcd.ignition.hostname = ip_address
-        etcd.ignition.path = "etcd2.ign"
-        etcd.ignition.drive_name = "config2"
-    end
-
-    config.vm.define "etcd3" do |etcd|
-        ip_address = "10.100.50.102"
-        etcd.vm.hostname = ip_address
-        etcd.vm.network :private_network, ip: ip_address, netmask: "255.255.0.0"
-        etcd.ignition.ip = ip_address
-
-        etcd.vm.provider :virtualbox do |vb|
-            etcd.ignition.config_obj = vb
-        end
-        etcd.ignition.hostname = ip_address
-        etcd.ignition.path = "etcd3.ign"
-        etcd.ignition.drive_name = "config3"
-    end
-
-    config.vm.define "master" do |master|
+    config.vm.define "haproxy" do |haproxy|
+        vm_name = "haproxy"
         ip_address = "10.100.100.100"
-        master.vm.hostname = ip_address
-        master.vm.network :private_network, ip: ip_address, netmask: "255.255.0.0"
-        master.ignition.ip = ip_address
+        haproxy.vm.hostname = vm_name
+        haproxy.vm.network :private_network, ip: ip_address, netmask: "255.255.0.0"
 
-        master.vm.provider :virtualbox do |vb|
-            master.ignition.config_obj = vb
+        haproxy.vm.provider :virtualbox do |vb|
+            vb.memory = 1024
+            haproxy.ignition.config_obj = vb
         end
-        master.ignition.hostname = ip_address
-        master.ignition.path = "master.ign"
-        master.ignition.drive_name = "config4"
+        haproxy.ignition.hostname = vm_name
+        haproxy.ignition.ip = ip_address
+        haproxy.ignition.path = "haproxy.ign"
+        haproxy.ignition.drive_name = vm_name
     end
 
-    $num_workers = 2
-    (1..$num_workers).each do |worker_number|
-        vm_name = "%s%d" % ["worker", worker_number]
-        ip_address = "10.100.150.%d" % [worker_number + 100]
-        config.vm.define vm_name do |worker|
-            worker.vm.hostname = ip_address
+    config.vm.define "bootstrap" do |bootstrap|
+        vm_name = "bootstrap"
+        ip_address = "10.100.100.101"
+        bootstrap.vm.hostname = vm_name
+        bootstrap.vm.network :private_network, ip: ip_address, netmask: "255.255.0.0"
+
+        bootstrap.vm.provider :virtualbox do |vb|
+            vb.memory = 2048
+            bootstrap.ignition.config_obj = vb
+        end
+        bootstrap.ignition.hostname = vm_name
+        bootstrap.ignition.ip = ip_address
+        bootstrap.ignition.path = "bootstrap.ign"
+        bootstrap.ignition.drive_name = vm_name
+
+        bootstrap.vm.provision :shell, :inline => "echo \"COREOS_PUBLIC_IPV4=#{ip_address}\" > /etc/environment", :privileged => true
+        bootstrap.vm.provision :shell, :inline => "touch /run/etcd_environment.done", :privileged => true
+    end
+
+    $controller_count = 2
+    (1..$controller_count).each do |i|
+        config.vm.define "controller%d" % i do |controller|
+            vm_name = "controller%d" %i
+            ip_address = "10.100.100.%d" % (102 + i -1)
+            controller.vm.hostname = vm_name
+            controller.vm.network :private_network, ip: ip_address, netmask: "255.255.0.0"
+
+            controller.vm.provider :virtualbox do |vb|
+                vb.memory = 2048
+                controller.ignition.config_obj = vb
+            end
+            controller.ignition.hostname = vm_name
+            controller.ignition.ip = ip_address
+            controller.ignition.path = "controller.ign"
+            controller.ignition.drive_name = vm_name
+
+            controller.vm.provision :shell, :inline => "echo \"COREOS_PUBLIC_IPV4=#{ip_address}\" > /etc/environment", :privileged => true
+            controller.vm.provision :shell, :inline => "touch /run/etcd_environment.done", :privileged => true
+        end
+    end
+
+    $worker_count = 2
+    (1..$worker_count).each do |i|
+        config.vm.define "worker%d" % i do |worker|
+            vm_name = "worker%d" %i
+            ip_address = "10.100.150.%d" % (100 + i -1)
+            worker.vm.hostname = vm_name
             worker.vm.network :private_network, ip: ip_address, netmask: "255.255.0.0"
-            worker.ignition.ip = ip_address
 
             worker.vm.provider :virtualbox do |vb|
+                vb.memory = 1024
                 worker.ignition.config_obj = vb
             end
-            worker.ignition.hostname = ip_address
+            worker.ignition.hostname = vm_name
+            worker.ignition.ip = ip_address
             worker.ignition.path = "worker.ign"
-            worker.ignition.drive_name = "config_%s" % vm_name
+            worker.ignition.drive_name = vm_name
+
+            worker.vm.provision :shell, :inline => "echo \"COREOS_PUBLIC_IPV4=#{ip_address}\" > /etc/environment", :privileged => true
+            worker.vm.provision :shell, :inline => "touch /run/etcd_environment.done", :privileged => true
         end
     end
 end

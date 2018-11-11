@@ -1,8 +1,0 @@
-[Service]
-Type=oneshot
-RemainAfterExit=yes
-ExecStart=/usr/bin/sh -c 'chmod 0700 /opt/bootstrap/node_ip.sh && \
-  /opt/bootstrap/node_ip.sh'
-
-[Install]
-WantedBy=multi-user.target

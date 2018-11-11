@@ -1,0 +1,48 @@
+[Unit]
+
+[Service]
+Restart=always
+RestartSec=30
+EnvironmentFile=/etc/environment
+Environment=KUBELET_IMAGE_URL=docker://k8s.gcr.io/hyperkube
+Environment=KUBELET_IMAGE_TAG=${k8s_tag}
+Environment="RKT_RUN_ARGS=--uuid-file-save=/var/cache/kubelet-pod.uuid \
+  --volume var-lib-cni,kind=host,source=/var/lib/cni \
+  --volume var-lib-kubelet,kind=host,source=/var/lib/kubelet \
+  --volume opt-cni-bin,kind=host,source=/opt/cni/bin \
+  --volume var-log,kind=host,source=/var/log \
+  --mount volume=var-log,target=/var/log \
+  --mount volume=var-lib-cni,target=/var/lib/cni \
+  --mount volume=var-lib-kubelet,target=/var/lib/kubelet \
+  --mount volume=opt-cni-bin,target=/opt/cni/bin \
+  --insecure-options=image"
+ExecStartPre=/bin/mkdir -p /opt/cni/bin
+ExecStartPre=/bin/mkdir -p /etc/kubernetes/manifests
+ExecStartPre=/bin/mkdir -p /etc/kubernetes/cni/net.d
+ExecStartPre=/bin/mkdir -p /etc/kubernetes/checkpoint-secrets
+ExecStartPre=/bin/mkdir -p /etc/kubernetes/inactive-manifests
+ExecStartPre=/bin/mkdir -p /var/lib/cni
+ExecStartPre=/bin/mkdir -p /var/lib/kubelet/pki
+ExecStartPre=/usr/bin/sh -c '[ -f /run/etcd_environment.done ]'
+ExecStartPre=-/usr/bin/rkt rm --uuid-file=/var/cache/kubelet-pod.uuid
+ExecStart=/usr/lib/coreos/kubelet-wrapper \
+  --allow-privileged \
+  --anonymous-auth=false \
+  --cert-dir=/var/lib/kubelet/pki \
+  --client-ca-file=/etc/kubernetes/ca.crt \
+  --cluster_dns=${dns_service_ip} \
+  --cluster_domain=${cluster_domain}  \
+  --cni-conf-dir=/etc/kubernetes/cni/net.d \
+  --exit-on-lock-contention \
+  --kubeconfig=/etc/kubernetes/kubeconfig \
+  --lock-file=/var/run/lock/kubelet.lock \
+  --network-plugin=cni \
+  --node-ip=$${COREOS_PUBLIC_IPV4} \
+  --node-labels=${node_labels} \
+  --pod-manifest-path=/etc/kubernetes/manifests \
+  --register-with-taints=${node_taints} \
+  --rotate-certificates
+ExecStop=-/usr/bin/rkt stop --uuid-file=/var/cache/kubelet-pod.uuid
+
+[Install]
+WantedBy=multi-user.target

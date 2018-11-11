@@ -1,47 +1,30 @@
-.PHONY: bootstrap clean config down prepare ssl-certs up
-
-bootstrap: up
-	./bootstrap_cluster.sh
+.PHONY: bootkube-assets clean config down prepare up
 
 up: config
-	vagrant up etcd1 master worker1 worker2
+	vagrant up etcd1 haproxy bootstrap controller1 controller2 worker1 worker2
 
 down:
 	-vagrant destroy --force
 
-config: prepare ssl-certs
+config: prepare
 	terraform apply
-	terraform output etcd1 > config_drives/etcd1.ign
-	terraform output etcd2 > config_drives/etcd2.ign
-	terraform output etcd3 > config_drives/etcd3.ign
-	terraform output master > config_drives/master.ign
-	terraform output worker > config_drives/worker.ign
-	terraform output client_kubeconfig > client_config/kubeconfig
-	terraform output canal_yaml > client_config/canal.yaml
-	terraform output coredns_values_yaml > client_config/coredns_values.yaml
-	terraform output kube_proxy_yaml > client_config/kube-proxy.yaml
-	terraform output kube_dashboard_values_yaml > client_config/kube-dashboard_values.yaml
-	cp ../../modules/config/client/data/nginx-ingress_values.yaml client_config/nginx-ingress_values.yaml
-	cp ../../modules/config/client/data/bootstrap_roles.yaml client_config/bootstrap_roles.yaml
+
+bootkube-assets: prepare
+	docker run --rm \
+		-v $(CURDIR)/bootkube_assets:/assets:rw \
+		quay.io/coreos/bootkube:v0.13.0 \
+		/bootkube render \
+			--api-servers https://10.100.100.100:6443 \
+			--asset-dir /assets \
+			--etcd-servers https://10.100.50.100:2379 \
+			--pod-cidr 10.120.0.0/16 \
+			--service-cidr 10.110.0.0/16
+	sudo chown -R daniel:daniel bootkube_assets
 
 clean: down
+	terraform destroy
 	-rm config_drives/*ign config_drives/*merged *backup client_config/*
-	-rm ../../modules/config/common/data/*.crt
-	-rm ../../modules/config/master/data/*.crt
-	-rm ../../modules/config/master/data/*.key
+	-rm -rf bootkube_assets
 
 prepare:
-	mkdir -p config_drives client_config
-
-ssl-certs:
-	cd ssl_certs &&  ./generate_certs.sh
-	cp ssl_certs/ca.crt client_config/
-	mv ssl_certs/ca.crt ../../modules/config/common/data/ca.crt
-	mv ssl_certs/ca.key ../../modules/config/master/data/ca.key
-	mv ssl_certs/token.crt ../../modules/config/master/data/token.crt
-	mv ssl_certs/token.key ../../modules/config/master/data/token.key
-	mv ssl_certs/apiserver.crt ../../modules/config/master/data/apiserver.crt
-	mv ssl_certs/apiserver.key ../../modules/config/master/data/apiserver.key
-	mv ssl_certs/kubelet.crt ../../modules/config/master/data/kubelet.crt
-	mv ssl_certs/kubelet.key ../../modules/config/master/data/kubelet.key
-	mv ssl_certs/admin.crt ssl_certs/admin.key client_config/
+	mkdir -p config_drives client_config bootkube_assets

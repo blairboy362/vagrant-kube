@@ -24,3 +24,6 @@ cluster-admin	system:masters group
 system:kube-scheduler	system:kube-scheduler user
 system:kube-controller-manager	system:kube-controller-manager user
 system:node-proxier	system:kube-proxy user
+
+
+etcdctl --endpoint=https://10.100.50.100:2379 --ca-file=/etc/ssl/certs/etcd/server-ca.crt --cert-file=/etc/ssl/certs/etcd/server.crt --key-file=/etc/ssl/certs/etcd/server.key cluster-health

@@ -1,34 +1,36 @@
 #!/usr/bin/env bash
 
+set -euo pipefail
+
 export KUBECONFIG="client_config/kubeconfig"
 
-kube_api_up="1"
+kubectl drain bootstrap --ignore-daemonsets
+set +e
+vagrant destroy --force bootstrap
+curl -k --silent --retry 1000 --retry-max-time 60 --retry-connrefused https://10.100.100.100:6443/healthz
+set -e
+kubectl delete node bootstrap
 
-while [ "${kube_api_up}" != "0" ]
-do
-    echo "Sleeping waiting for kube api..."
-    sleep 2
-    curl --fail --silent http://10.100.100.100:8080/healthz > /dev/null
-    kube_api_up=$?
-done
-
-echo "API is up. Waiting a few minutes for it to settle.."
-sleep 300
-kubectl --kubeconfig=${KUBECONFIG} apply -f client_config/bootstrap_roles.yaml
-kubectl --kubeconfig=${KUBECONFIG} apply -f client_config/kube-proxy.yaml
-kubectl --kubeconfig=${KUBECONFIG} apply -f client_config/canal.yaml
+kubectl apply -f examples/tiller-sa.yaml
+kubectl apply -f examples/tiller-cluster-role-binding.yaml
 
 helm init --service-account tiller
 
-echo "Helm / tiller initialised. Sleeping for 5 minutes to allow tiller to come up completely"
-sleep 300
+echo "Waiting for tiller"
+until kubectl -n kube-system get pods | grep tiller | grep 1/1 | grep Running; do echo -n "."; sleep 1; done
+helm repo update
 
-helm install -f client_config/coredns_values.yaml stable/coredns --name coredns
-helm install -f client_config/nginx-ingress_values.yaml stable/nginx-ingress --name nginx-ingress
+kubectl apply -f examples/cert-manager-secret.yaml
+helm install -f examples/cert-manager-values.yaml stable/cert-manager --name cert-manager
+echo "Waiting for cert-manager"
+until kubectl -n default get pods | grep cert-manager | grep 1/1 | grep Running; do echo -n "."; sleep 1; done
+kubectl apply -f examples/cert-manager-cluster-issuer.yaml
 
-echo "Sleeping for 10 seconds to let the nginx ingress controller settle..."
-sleep 10
+helm install -f examples/nginx-ingress-values.yaml stable/nginx-ingress --name nginx-ingress
+echo "Waiting for the ingress controller"
+until kubectl -n default get pods | grep nginx-ingress-default-backend | grep 1/1 | grep Running; do echo -n "."; sleep 1; done
+until kubectl -n default get pods | grep nginx-ingress-controller | grep 1/1 | grep Running; do echo -n "."; sleep 1; done
 
-helm install -f client_config/kube-dashboard_values.yaml stable/kubernetes-dashboard --name kubernetes-dashboard
+helm install -f examples/kube-dashboard-values.yaml stable/kubernetes-dashboard --name kubernetes-dashboard
 
 echo "Cluster bootstrap complete!"

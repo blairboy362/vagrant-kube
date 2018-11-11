@@ -1,28 +1,16 @@
 [Unit]
-Requires=docker.service
-After=docker.service
+ConditionPathExists=/run/etcd_environment.done
 
 [Service]
-Restart=always
-RestartSec=30
-ExecStartPre=/bin/touch /var/log/etcd.log
-ExecStartPre=/usr/bin/docker pull gcr.io/google_containers/etcd:3.2.14
-ExecStartPre=-/usr/bin/docker rm etcd
-ExecStart=/usr/bin/docker run --rm \
-  --name=etcd \
-  --net=host \
-  -e "TARGET_STORAGE=etcd3" \
-  -e "TARGET_VERSION=3.2.14" \
-  -e "DATA_DIRECTORY=/var/etc/data" \
-  -v /mnt/master-pd/var/etcd:/var/etcd:rw \
-  -v /var/log:/var/log:rw \
-  -v /opt/etcd/etc:/opt/etcd/etc:rw \
-  -p 2379:2379 \
-  -p 2380:2380 \
-  gcr.io/google_containers/etcd:3.2.14 \
-    /bin/sh -c \
-      'if [ -e /usr/local/bin/migrate-if-needed.sh ]; then /usr/local/bin/migrate-if-needed.sh 1>>/var/log/etcd.log 2>&1; fi; exec /usr/local/bin/etcd --name ${node_name} --listen-peer-urls http://${node_ip}:2380 --initial-advertise-peer-urls http://${node_ip}:2380 --advertise-client-urls http://${node_ip}:2379 --listen-client-urls http://${node_ip}:2379,http://127.0.0.1:2379 --initial-cluster-token etcd-cluster-1 --data-dir /var/etcd/data --initial-cluster ${cluster_members} --initial-cluster-state new 1>>/var/log/etcd.log 2>&1'
-ExecStop=/usr/bin/docker stop etcd
-
-[Install]
-WantedBy=multi-user.target
+EnvironmentFile=/run/etcd_environment
+Environment="ETCD_IMAGE_TAG=v3.1.8"
+Environment="ETCD_LISTEN_CLIENT_URLS=https://0.0.0.0:2379"
+Environment="ETCD_INITIAL_CLUSTER=${cluster_members}"
+Environment="ETCD_TRUSTED_CA_FILE=/etc/ssl/certs/etcd/server-ca.crt"
+Environment="ETCD_CERT_FILE=/etc/ssl/certs/etcd/server.crt"
+Environment="ETCD_KEY_FILE=/etc/ssl/certs/etcd/server.key"
+Environment="ETCD_CLIENT_CERT_AUTH=true"
+Environment="ETCD_PEER_TRUSTED_CA_FILE=/etc/ssl/certs/etcd/peer-ca.crt"
+Environment="ETCD_PEER_CERT_FILE=/etc/ssl/certs/etcd/peer.crt"
+Environment="ETCD_PEER_KEY_FILE=/etc/ssl/certs/etcd/peer.key"
+ExecStartPre=/usr/bin/chown -R etcd:etcd /etc/ssl/certs/etcd

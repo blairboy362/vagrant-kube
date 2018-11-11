@@ -1,5 +1,0 @@
-{
-    "common_name": "kubernetes",
-    "alt_names": "kubernetes.default,kubernetes.default.svc,kubernetes.default.svc.k8s,kubernetes.default.svc.k8s.local",
-    "ip_sans": "10.100.100.100,10.110.0.1"
-}
