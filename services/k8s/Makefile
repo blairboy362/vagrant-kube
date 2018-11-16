@@ -1,10 +1,15 @@
-.PHONY: bootkube-assets clean config down prepare up
+.PHONY: bootkube-assets bootstrap clean config down prepare up
+
+bootstrap: up
+	vagrant up bootstrap
 
 up: config
-	vagrant up etcd1 haproxy bootstrap controller1 controller2 worker1 worker2
+	vagrant up etcd1 haproxy controller1 controller2 controller3 worker1 worker2 worker3
 
-down:
-	-vagrant destroy --force
+clean: down
+	terraform destroy
+	-rm config_drives/*ign config_drives/*merged *backup client_config/*
+	-rm -rf bootkube_assets
 
 config: prepare
 	terraform apply
@@ -21,10 +26,8 @@ bootkube-assets: prepare
 			--service-cidr 10.110.0.0/16
 	sudo chown -R daniel:daniel bootkube_assets
 
-clean: down
-	terraform destroy
-	-rm config_drives/*ign config_drives/*merged *backup client_config/*
-	-rm -rf bootkube_assets
+down:
+	-vagrant destroy --force
 
 prepare:
 	mkdir -p config_drives client_config bootkube_assets

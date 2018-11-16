@@ -28,5 +28,6 @@ variable "cluster_domain" {
 
 variable "k8s_tag" {
   type = "string"
-  default = "v1.11.4"
+  #default = "v1.11.4"
+  default = "v1.10.10"
 }

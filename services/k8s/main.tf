@@ -42,14 +42,17 @@ module "haproxy" {
     bootstrap = "10.100.100.101:6443"
     controller1 = "10.100.100.102:6443"
     controller2 = "10.100.100.103:6443"
+    controller3 = "10.100.100.104:6443"
   }
   workers_http_map = {
     worker1 = "10.100.150.100:32080"
     worker2 = "10.100.150.101:32080"
+    worker3 = "10.100.150.102:32080"
   }
   workers_https_map = {
     worker1 = "10.100.150.100:32443"
     worker2 = "10.100.150.101:32443"
+    worker3 = "10.100.150.102:32443"
   }
 }
 
@@ -115,4 +118,15 @@ module "worker" {
 resource "local_file" "worker-ign" {
   content  = "${module.worker.ignition_config}"
   filename = "config_drives/worker.ign"
+}
+
+module "k8s-upgrader" {
+  source             = "../../modules/config/upgrader"
+  ignition_file_ids  = "${module.bootkube.ignition-file-ids}"
+  systemd_unit_ids   = "${module.common.ignition_systemd_unit_ids}"
+}
+
+resource "local_file" "k8s-upgrader-ign" {
+  content  = "${module.k8s-upgrader.ignition_config}"
+  filename = "config_drives/k8s-upgrader.ign"
 }

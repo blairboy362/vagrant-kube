@@ -12,10 +12,15 @@ Requirements (versions installed at time of writing):
 ```
 cd services/k8s
 terraform init
-make up
+make bootstrap
 export KUBECONFIG=$(pwd)/client_config/kubeconfig
 watch -n 5 kubectl get all --all-namespaces
 ./bootstrap_cluster.sh
+<edit k8s version in variables.tf>
+make config
+vagrant up k8s-upgrader
+watch -n 5 kubectl get all --all-namespaces
+./upgrade_nodes.sh
 ```
 
 The bootstrap scripts may silently fail to install some components. Sometimes the cluster (and the API server in particular) doesn't come up cleanly and bounces for a few minutes before settling. During that window various components may fail to install (an intermittent issue I haven't bothered to solve yet).

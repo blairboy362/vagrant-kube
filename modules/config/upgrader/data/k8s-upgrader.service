@@ -1,0 +1,23 @@
+[Unit]
+After=docker.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=true
+WorkingDirectory=/opt/bootkube
+ExecStartPre=-/usr/bin/rkt rm --uuid-file=/var/cache/k8s-upgrader-pod.uuid
+ExecStart=/usr/bin/rkt run \
+  --uuid-file-save=/var/cache/k8s-upgrader-pod.uuid \
+  --trust-keys-from-https \
+  --volume manifests,kind=host,source=${assets_dir}/manifests \
+  --volume auth,kind=host,source=${assets_dir}/auth \
+  --mount volume=manifests,target=/manifests \
+  --mount volume=auth,target=/etc/kubernetes \
+  --insecure-options=image \
+  --set-env=KUBECONFIG=/etc/kubernetes/kubeconfig \
+  docker://lachlanevenson/k8s-kubectl:v1.12.2 \
+  --dns=host \
+  --exec=/usr/local/bin/kubectl -- apply -Rf /manifests
+
+[Install]
+WantedBy=multi-user.target
